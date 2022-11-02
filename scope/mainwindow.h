@@ -14,7 +14,10 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-
+    void parabola();  //抛物线绘制测试
+    void twocurve();  //两条曲线绘制测试
+    void multicurve();//多种曲线绘制
+    void Histogram(); //绘制柱状图
 private:
     Ui::MainWindow *ui;
 };

@@ -247,6 +247,7 @@ Makefile: ../scope/scope.pro E:/Qt5.14.2/qt/5.14.2/mingw73_32/mkspecs/win32-g++/
 		E:/Qt5.14.2/qt/5.14.2/mingw73_32/mkspecs/features/qt_config.prf \
 		E:/Qt5.14.2/qt/5.14.2/mingw73_32/mkspecs/win32-g++/qmake.conf \
 		E:/Qt5.14.2/qt/5.14.2/mingw73_32/mkspecs/features/spec_post.prf \
+		.qmake.stash \
 		E:/Qt5.14.2/qt/5.14.2/mingw73_32/mkspecs/features/exclusive_builds.prf \
 		E:/Qt5.14.2/qt/5.14.2/mingw73_32/mkspecs/features/toolchain.prf \
 		E:/Qt5.14.2/qt/5.14.2/mingw73_32/mkspecs/features/default_pre.prf \
@@ -271,11 +272,11 @@ Makefile: ../scope/scope.pro E:/Qt5.14.2/qt/5.14.2/mingw73_32/mkspecs/win32-g++/
 		E:/Qt5.14.2/qt/5.14.2/mingw73_32/mkspecs/features/yacc.prf \
 		E:/Qt5.14.2/qt/5.14.2/mingw73_32/mkspecs/features/lex.prf \
 		../scope/scope.pro \
+		E:/Qt5.14.2/qt/5.14.2/mingw73_32/lib/Qt5PrintSupport.prl \
 		E:/Qt5.14.2/qt/5.14.2/mingw73_32/lib/Qt5Widgets.prl \
 		E:/Qt5.14.2/qt/5.14.2/mingw73_32/lib/Qt5Gui.prl \
 		E:/Qt5.14.2/qt/5.14.2/mingw73_32/lib/Qt5Core.prl \
 		E:/Qt5.14.2/qt/5.14.2/mingw73_32/lib/qtmain.prl \
-		.qmake.stash \
 		E:/Qt5.14.2/qt/5.14.2/mingw73_32/mkspecs/features/build_pass.prf
 	$(QMAKE) -o Makefile ..\scope\scope.pro -spec win32-g++ "CONFIG+=debug" "CONFIG+=qml_debug"
 E:/Qt5.14.2/qt/5.14.2/mingw73_32/mkspecs/features/spec_pre.prf:
@@ -455,6 +456,7 @@ E:/Qt5.14.2/qt/5.14.2/mingw73_32/mkspecs/features/qt_functions.prf:
 E:/Qt5.14.2/qt/5.14.2/mingw73_32/mkspecs/features/qt_config.prf:
 E:/Qt5.14.2/qt/5.14.2/mingw73_32/mkspecs/win32-g++/qmake.conf:
 E:/Qt5.14.2/qt/5.14.2/mingw73_32/mkspecs/features/spec_post.prf:
+.qmake.stash:
 E:/Qt5.14.2/qt/5.14.2/mingw73_32/mkspecs/features/exclusive_builds.prf:
 E:/Qt5.14.2/qt/5.14.2/mingw73_32/mkspecs/features/toolchain.prf:
 E:/Qt5.14.2/qt/5.14.2/mingw73_32/mkspecs/features/default_pre.prf:
@@ -479,11 +481,11 @@ E:/Qt5.14.2/qt/5.14.2/mingw73_32/mkspecs/features/exceptions.prf:
 E:/Qt5.14.2/qt/5.14.2/mingw73_32/mkspecs/features/yacc.prf:
 E:/Qt5.14.2/qt/5.14.2/mingw73_32/mkspecs/features/lex.prf:
 ../scope/scope.pro:
+E:/Qt5.14.2/qt/5.14.2/mingw73_32/lib/Qt5PrintSupport.prl:
 E:/Qt5.14.2/qt/5.14.2/mingw73_32/lib/Qt5Widgets.prl:
 E:/Qt5.14.2/qt/5.14.2/mingw73_32/lib/Qt5Gui.prl:
 E:/Qt5.14.2/qt/5.14.2/mingw73_32/lib/Qt5Core.prl:
 E:/Qt5.14.2/qt/5.14.2/mingw73_32/lib/qtmain.prl:
-.qmake.stash:
 E:/Qt5.14.2/qt/5.14.2/mingw73_32/mkspecs/features/build_pass.prf:
 qmake: FORCE
 	@$(QMAKE) -o Makefile ..\scope\scope.pro -spec win32-g++ "CONFIG+=debug" "CONFIG+=qml_debug"
