@@ -1,49 +1,30 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include <x86intrin.h>
+//#include <x86intrin.h>
 
 MainWindow::MainWindow (QWidget *parent) :
     QMainWindow (parent),
     ui (new Ui::MainWindow)
 {
     ui->setupUi (this);
+    timer.start(1000);
+    m_dateTime = QDateTime::currentDateTime();
+    connect(&timer, SIGNAL(timeout()), this, SLOT(UpdateTime()));
+
     createUI();     // 初始化串口相关配置
     setupPlot();    // 设置绘图区域，即X,Y轴范围等并连接控件槽
-    /* Channel selection */
+    connect (ui->plot, SIGNAL (mouseWheel (QWheelEvent*)), this, SLOT (onMouseWheelInPlot(QWheelEvent*)));// 在spinbox显示鼠标坐标
+    connect (ui->plot, SIGNAL (mouseMove (QMouseEvent*)), this, SLOT (onMouseMoveInPlot (QMouseEvent*))); // 将鼠标坐标发送到spinbox
     connect (ui->plot, SIGNAL(selectionChangedByUser()), this, SLOT(channel_selection()));
-    connect (&updateTimer, SIGNAL (timeout()), this, SLOT (replot()));   // 将计时器连接到replot插槽
-
+    connect (&updateTimer, SIGNAL(timeout()), this, SLOT (replot()));   // 将计时器连接到replot插槽
+    // 双击图标名称重命名
     connect (ui->plot, SIGNAL(legendDoubleClick (QCPLegend*, QCPAbstractLegendItem*, QMouseEvent*)),
              this, SLOT(legend_double_click (QCPLegend*, QCPAbstractLegendItem*, QMouseEvent*)));
-
-
-//    /* Wheel over plot when plotting */
-//    connect (ui->plot, SIGNAL (mouseWheel (QWheelEvent*)), this, SLOT (onMouseWheelInPlot(QWheelEvent*)));
-
-//    /* Slot for printing coordinates */
-//    connect (ui->plot, SIGNAL (mouseMove (QMouseEvent*)), this, SLOT (onMouseMoveInPlot (QMouseEvent*)));
-
-//    m_csvFile = nullptr;          // 用于保存图像
 }
 
 MainWindow::~MainWindow()
 {
-//    closeCsvFile();
-
-//    if (serialPort != nullptr)
-//    {
-//        delete serialPort;
-//    }
-
-//    /* 此操作为保存对于端口的配置，并保存为config.ini文件 */
-//    QSettings settings("config.ini", QSettings::IniFormat);
-//    settings.setValue("com", ui->comboPort->currentText());
-//    settings.setValue("baudrate",  ui->comboBaud->currentText());
-//    settings.setValue("databits", ui->comboData->currentIndex());
-//    settings.setValue("stopbits", ui->comboStop->currentIndex());
-//    settings.setValue("paritybits", ui->comboParity->currentIndex());
-
-    delete ui;
+    delete ui;    
 }
 
 void MainWindow::createUI()
@@ -97,46 +78,6 @@ void MainWindow::createUI()
 
     /* Initialize the listwidget */
     ui->listWidget_Channels->clear();
-    ui->comboPort->installEventFilter(this);
-
-//    //创建config.ini文件用于保存端口相关设置
-//    QFile file("config.ini");
-//    if(!file.exists())
-//    {
-//        QSettings settings("config.ini", QSettings::IniFormat);
-//        settings.setValue("com", "");
-//        settings.setValue("baudrate", 115200);
-//        settings.setValue("databits", 0);
-//        settings.setValue("stopbits", 0);
-//        settings.setValue("paritybits", 0);
-//        settings.setValue("theme", "light");
-//    }
-//    QSettings settings("config.ini", QSettings::IniFormat);
-//    int index = ui->comboPort->findText(settings.value("com").toString());
-//    if(index >= 0)
-//    {
-//        ui->comboPort->setCurrentIndex(index);
-//    }
-//    ui->comboBaud->setCurrentText(settings.value("baudrate").toString());
-//    ui->comboData->setCurrentIndex(settings.value("databits").toInt());
-//    ui->comboStop->setCurrentIndex(settings.value("stopbits").toInt());
-//    ui->comboParity->setCurrentIndex(settings.value("paritybits").toInt());
-
-//    QString theme = settings.value("theme").toString();
-//    if(theme == QString("light"))
-//    {
-//        gui_colors[0] = QColor (255,  255,  255,  255); /**<  0: qdark ui dark/background color */
-//        gui_colors[1] = QColor (175,  175,  175,  255); /**<  0: qdark ui dark/background color */
-//        gui_colors[2] = QColor (85,   85,   85,   255); /**<  0: qdark ui dark/background color */
-//        gui_colors[3] = QColor (207,  208,  208,  200); /**<  0: qdark ui dark/background color */
-
-//    }else if(theme == QString("dark"))
-//    {
-//        gui_colors[0] = QColor (48,  47,  47,  255); /**<  0: qdark ui dark/background color */
-//        gui_colors[1] = QColor (80,  80,  80,  255); /**<  1: qdark ui medium/grid color */
-//        gui_colors[2] = QColor (170, 170, 170, 255); /**<  2: qdark ui light/text color */
-//        gui_colors[3] = QColor (48,  47,  47,  200); /**<  3: qdark ui dark/background color w/transparency */
-//    }
 }
 
 
@@ -156,7 +97,6 @@ void MainWindow::setupPlot()
     ui->plot->legend->setFont (font);
 
     /** See QCustomPlot examples / styled demo **/
-    /* X Axis: Style */
     // 函数setPen(QPen(gui_colors[2], 1, Qt::DotLine)参数
     // 第一个参数QPen(gui_colors[2]:颜色
     // 第二个参数为设置画笔的粗细
@@ -246,8 +186,6 @@ void MainWindow::openPort (QSerialPortInfo portInfo, int baudRate, QSerialPort::
     connect (this, SIGNAL(newData(QStringList)), this, SLOT(onNewDataArrived(QStringList)));
     connect (serialPort, SIGNAL(readyRead()), this, SLOT(readData()));
 
-    connect (this, SIGNAL(newData(QStringList)), this, SLOT(saveStream(QStringList)));
-
     if (serialPort->open (QIODevice::ReadWrite))
     {
         serialPort->setBaudRate (baudRate);
@@ -262,11 +200,8 @@ void MainWindow::openPort (QSerialPortInfo portInfo, int baudRate, QSerialPort::
         qDebug() << serialPort->errorString();
     }
 }
-/** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-/*
- * 关闭串口
- */
+// 关闭串口
 void MainWindow::onPortClosed()
 {
     //qDebug() << "Port closed signal received!";
@@ -274,89 +209,63 @@ void MainWindow::onPortClosed()
     connected = false;
     plotting = false;
 
-    //--
-    closeCsvFile();
     // 断开读取操作信号与槽的连接
     disconnect (serialPort, SIGNAL(readyRead()), this, SLOT(readData()));
     disconnect (this, SIGNAL(portOpenOK()), this, SLOT(portOpenedSuccess()));
     disconnect (this, SIGNAL(portOpenFail()), this, SLOT(portOpenedFail()));
     disconnect (this, SIGNAL(portClosed()), this, SLOT(onPortClosed()));
     disconnect (this, SIGNAL(newData(QStringList)), this, SLOT(onNewDataArrived(QStringList)));
-
-    disconnect (this, SIGNAL(newData(QStringList)), this, SLOT(saveStream(QStringList)));
 }
 
-/*
- * 更改组合框时显示所选端口的信息
- */
+// 更改组合框时显示所选端口的信息
 void MainWindow::on_comboPort_currentIndexChanged (const QString &arg1)
 {
     QSerialPortInfo selectedPort (arg1);                                                   // Dislplay info for selected port
     ui->statusBar->showMessage (selectedPort.description());
 }
 
-/*
- * 端口成功打开则调用该函数
- */
+// 端口成功打开则调用该函数
 void MainWindow::portOpenedSuccess()
 {
     //qDebug() << "Port opened signal received!";
     setupPlot();                                                // 创建QCustomPlot，绘制图形边框，即坐标轴等相关信息
     ui->statusBar->showMessage ("端口打开成功!");
     enable_com_controls (false);                                // 打开端口后，不允许调节波特率等，断开连接选项启动
-
-    if(ui->actionRecord_stream->isChecked())
-    {
-        //--> Create new CSV file with current date/timestamp
-        openCsvFile();
-    }
-    /* Lock the save option while recording */
-    ui->actionRecord_stream->setEnabled(false);
-
-    updateTimer.start (20);                                      // 图表每秒刷新20次
-    connected = true;                                            //设置连接状态、绘图状态为true;
+    updateTimer.start (20);                                     // 20ms刷新一次
+    connected = true;                                           //设置连接状态、绘图状态为true;
     plotting = true;
 }
 
-/*
- * 串口打开失败
- */
+// 串口打开失败
 void MainWindow::portOpenedFail()
 {
     qDebug() << "Port cannot be open signal received!";
     ui->statusBar->showMessage ("打开失败，请检查该端口是否存在或被占用!");
 }
 
-/*
- * 设置x坐标范围
- */
+// 设置x坐标范围
 void MainWindow::replot()
 {
+
     ui->plot->xAxis->setRange (dataPointNumber - ui->spinPoints->value(), dataPointNumber);
     ui->plot->replot();
 }
 
-/*
- * y轴最小值设置
- */
+// y轴最小值设置
 void MainWindow::on_spinAxesMin_valueChanged(int arg1)
 {
     ui->plot->yAxis->setRangeLower (arg1);
     ui->plot->replot();
 }
 
-/*
- * y轴最大值设置
- */
+// y轴最大值设置
 void MainWindow::on_spinAxesMax_valueChanged(int arg1)
 {
     ui->plot->yAxis->setRangeUpper (arg1);
     ui->plot->replot();
 }
 
-/*
- * 接收到新数据时调用的槽函数
- */
+// 接收到新数据时调用的槽函数
 void MainWindow::onNewDataArrived(QStringList newData)
 {
     static int data_members = 0;
@@ -364,10 +273,6 @@ void MainWindow::onNewDataArrived(QStringList newData)
     static int i = 0;
     volatile bool you_shall_NOT_PASS = false;
 
-    /* When a fast baud rate is set (921kbps was the first to starts to bug),
-       this method is called multiple times (2x in the 921k tests), so a flag
-       is used to throttle
-       TO-DO: Separate processes, buffer data (1) and process data (2) */
     while (you_shall_NOT_PASS) {}
     you_shall_NOT_PASS = true;
 
@@ -427,9 +332,7 @@ void MainWindow::onNewDataArrived(QStringList newData)
     you_shall_NOT_PASS = false;
 }
 
-/*
- * 利用信号readyRead，通过串口读取数据
- */
+// 利用信号readyRead，通过串口读取数据
 void MainWindow::readData()
 {
     if(serialPort->bytesAvailable())
@@ -460,7 +363,9 @@ void MainWindow::readData()
                         if(temp[i] == END_MSG)               // 若开始符'$'后为停止符';'
                         {                                    // 状态切换为等待下一次开始
                             STATE = WAIT_START;
-                            QStringList incomingData = receivedData.split(' '); //拆分从端口接收的字符串并将其放入列表
+                            QStringList incomingData = receivedData.split(' '); // 把receivedData这个字符串用空格" "进行分割
+                                                                                // 分割后的字符串数组放在incomingData[]中
+                                                                                // 比如 111 222 333
                             if(filterDisplayedData)
                             {
                                 ui->textEdit_UartWindow->append(receivedData);
@@ -483,21 +388,7 @@ void MainWindow::readData()
     }
 }
 
-//void MainWindow::on_comboAxes_currentIndexChanged(int index)
-//{
-//    if(index == 0) {
-//      ui->statusBar->showMessage("Axis 1: Red");
-//    } else if(index == 1) {
-//        ui->statusBar->showMessage("Axis 1: Red; Axis 2: Yellow");
-//    } else {
-//        ui->statusBar->showMessage("Axis 1: Red; Axis 2: Yellow; Axis 3: Green");
-//    }
-//}
-/** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-
-/*
- * Y轴刻度更改
- */
+// Y轴刻度更改
 void MainWindow::on_spinYStep_valueChanged(int arg1)
 {
     ui->plot->yAxis->ticker()->setTickCount(arg1);
@@ -505,17 +396,49 @@ void MainWindow::on_spinYStep_valueChanged(int arg1)
     ui->spinYStep->setValue(ui->plot->yAxis->ticker()->tickCount());
 }
 
-/*
- * 将绘图的PNG图像保存到当前EXE目录
- */
+// 将绘图的PNG图像保存到当前EXE目录
 void MainWindow::on_savePNGButton_clicked()
 {
-    ui->plot->savePng (QString::number(dataPointNumber) + ".png", 1920, 1080, 2, 50);
+    QString filename = QFileDialog::getSaveFileName();
+
+        if( filename == "" )
+        {
+            QMessageBox::information(this,"fail","保存失败");
+         }
+         else if( filename.endsWith(".png") )
+         {
+             QMessageBox::information(this,"success","成功保存为png文件");
+             ui->plot->savePng( filename, ui->plot->width(), ui->plot->height() );
+
+         }
+         else if( filename.endsWith(".jpg")||filename.endsWith(".jpeg") )
+         {
+             QMessageBox::information(this,"success","成功保存为jpg文件");
+             ui->plot->saveJpg( filename, ui->plot->width(), ui->plot->height() );
+
+         }
+         else if( filename.endsWith(".bmp") )
+         {
+             QMessageBox::information(this,"success","成功保存为bmp文件");
+             ui->plot->saveBmp( filename, ui->plot->width(), ui->plot->height() );
+
+         }
+         else if( filename.endsWith(".pdf") )
+         {
+             QMessageBox::information(this,"success","成功保存为pdf文件");
+             ui->plot->savePdf( filename, ui->plot->width(), ui->plot->height() );
+
+         }
+        else
+         {
+            //否则追加后缀名为.png保存文件
+             QMessageBox::information(this,"success","保存成功,已默认保存为png文件");
+             ui->plot->savePng(filename.append(".png"), ui->plot->width(), ui->plot->height() );
+
+        }
 }
 
-/*
- * 打印鼠标坐标
- */
+// 打印鼠标坐标
 void MainWindow::onMouseMoveInPlot(QMouseEvent *event)
 {
     int xx = int(ui->plot->xAxis->pixelToCoord(event->x()));
@@ -524,11 +447,7 @@ void MainWindow::onMouseMoveInPlot(QMouseEvent *event)
     coordinates = coordinates.arg(xx).arg(yy);
     ui->statusBar->showMessage(coordinates);
 }
-
-/*
- * @brief Send plot wheelmouse to spinbox
- * @param event
- */
+// 将绘图滚轮鼠标发送到spinbox
 void MainWindow::onMouseWheelInPlot(QWheelEvent *event)
 {
     QWheelEvent inverted_event = QWheelEvent(event->posF(), event->globalPosF(),
@@ -536,16 +455,9 @@ void MainWindow::onMouseWheelInPlot(QWheelEvent *event)
                                              0, Qt::Vertical, event->buttons(), event->modifiers());
     QApplication::sendEvent (ui->spinPoints, &inverted_event);
 }
-/** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-/**
- * @brief Select both line and legend (channel)
- * @param plottable
- * @param event
- */
 void MainWindow::channel_selection (void)
 {
-    /* synchronize selection of graphs with selection of corresponding legend items */
     for (int i = 0; i < ui->plot->graphCount(); i++)
     {
         QCPGraph *graph = ui->plot->graph(i);
@@ -553,12 +465,10 @@ void MainWindow::channel_selection (void)
         if (item->selected())
         {
             item->setSelected (true);
-            //          graph->set (true);
         }
         else
         {
             item->setSelected (false);
-            //        graph->setSelected (false);
         }
     }
 }
@@ -603,28 +513,20 @@ void MainWindow::legend_double_click(QCPLegend *legend, QCPAbstractLegendItem *i
         }
     }
 }
-/** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-/**
- * @brief Spin box controls how many data points are collected and displayed
- * @param arg1
- */
+// 设置曲线点数
 void MainWindow::on_spinPoints_valueChanged (int arg1)
 {
     Q_UNUSED(arg1)
     ui->plot->xAxis->setRange (dataPointNumber - ui->spinPoints->value(), dataPointNumber);
     ui->plot->replot();
 }
-/** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-/*
- * 软件使用参考说明
- */
+// 软件使用参考说明
 void MainWindow::on_actionHow_to_use_triggered()
 {
-//    helpWindow = new HelpWindow (this);
-//    helpWindow->setWindowTitle ("本软件使用方法");
-//    helpWindow->show();
+    helpWindow = new HelpWindow (this);
+    helpWindow->show();
 }
 
 /* 该函数为总体开关，启动时检测设备工作状态,该函数与createUI()联合查看
@@ -639,6 +541,7 @@ void MainWindow::on_actionConnect_triggered()
         /* 设备处于连接状态 */
         if (!plotting)      //判断图像是否正在绘制
         {
+            timer.start();
             updateTimer.start();  // 打开绘图定时器
             plotting = true;
             ui->actionConnect->setEnabled (false);
@@ -748,7 +651,6 @@ void MainWindow::on_actionDisconnect_triggered()
         plotting = false;             // 图表绘制状态设置为 0
         ui->actionPause_Plot->setEnabled (false);
         ui->actionDisconnect->setEnabled (false);
-        ui->actionRecord_stream->setEnabled(true);
         receivedData.clear();         // 清除已接收的数据
 
         enable_com_controls (true);   //断开串口，允许重新设定波特率等
@@ -818,15 +720,6 @@ void MainWindow::on_pushButton_AutoScale_clicked()
     ui->spinAxesMin->setValue(int(ui->plot->yAxis->range().lower) + int(ui->plot->yAxis->range().lower*0.1));
 }
 
-void MainWindow::on_pushButton_ResetVisible_clicked()
-{
-    for(int i=0; i<ui->plot->graphCount(); i++)
-    {
-        ui->plot->graph(i)->setVisible(true);
-        ui->listWidget_Channels->item(i)->setBackground(Qt::NoBrush);
-    }
-}
-
 void MainWindow::on_listWidget_Channels_itemDoubleClicked(QListWidgetItem *item)
 {
     int graphIdx = ui->listWidget_Channels->currentRow();
@@ -849,87 +742,9 @@ void MainWindow::on_pushButton_ClearRecv_clicked()
     ui->textEdit_UartWindow->clear();
 }
 
-
-/*
- * 保存图表，此时串口保持开启，但停止绘图
- */
-void MainWindow::on_actionRecord_stream_triggered()
+void MainWindow::UpdateTime()
 {
-    if (ui->actionRecord_stream->isChecked())
-    {
-        ui->statusBar->showMessage ("数据将保存到csv格式文件中！");
-    }
-    else
-    {
-        ui->statusBar->showMessage ("数据将不在保存到csv格式文件中！");
-    }
-}
-
-/*
- * 打开已保存的图像
- */
-void MainWindow::openCsvFile(void)
-{
-    QString filename = QApplication::applicationDirPath() + "/" + QDateTime::currentDateTime().toString("yyyy-MM-d-HH-mm-ss-")+"data-out.csv";
-    m_csvFile = new QFile(filename);
-    if(!m_csvFile)
-        return;
-    if (!m_csvFile->open(QIODevice::ReadWrite | QIODevice::Text))
-        return;
-}
-
-/*
- *
- */
-void MainWindow::closeCsvFile(void)
-{
-    if(!m_csvFile) return;
-    m_csvFile->close();
-    if(m_csvFile) delete m_csvFile;
-    m_csvFile = nullptr;
-}
-
-/**
- * @brief Open a new CSV file to save received data
- *
- */
-void MainWindow::saveStream(QStringList newData)
-{
-    if(!m_csvFile)
-        return;
-    if(ui->actionRecord_stream->isChecked())
-    {
-        QTextStream out(m_csvFile);
-        out << QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss") << ",";
-        foreach (const QString &str, newData) {
-            out << str << ",";
-        }
-        out << "\n";
-    }
-}
-
-void MainWindow::on_actionOpenPath_triggered()
-{
-    // 打开应用程序所在目录
-    QDesktopServices::openUrl(QUrl::fromLocalFile(QCoreApplication::applicationDirPath() + "/"));
-}
-
-bool MainWindow::eventFilter(QObject *watched, QEvent *event)
-{
-    if(event->type() == QEvent::MouseButtonPress)
-    {
-        if(watched == ui->comboPort)
-        {
-            QComboBox* comboBox = qobject_cast<QComboBox *>(watched);
-
-            comboBox->clear();
-
-            QList<QSerialPortInfo> serials = QSerialPortInfo::availablePorts();
-            foreach (QSerialPortInfo info, serials)
-            {
-                comboBox->addItem(info.portName());
-            }
-        }
-    }
-    return QMainWindow::eventFilter(watched, event);
+    QDateTime UTC(QDateTime::currentDateTimeUtc());
+    QDateTime local(UTC.toLocalTime());
+    ui->lineEdit->setText(local.toString("yyyy.MM.dd  hh:mm:ss"));
 }

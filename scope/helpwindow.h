@@ -1,22 +1,22 @@
-#ifndef HELPWINDOW_H
-#define HELPWINDOW_H
+#ifndef HELPWINDOW_HPP
+#define HELPWINDOW_HPP
 
-#include <QWidget>
+#include <QDialog>
 
 namespace Ui {
-class HelpWindow;
+    class HelpWindow;
 }
 
-class HelpWindow : public QWidget
+class HelpWindow : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit HelpWindow(QWidget *parent = nullptr);
+    explicit HelpWindow(QWidget *parent = 0);
     ~HelpWindow();
 
 private:
     Ui::HelpWindow *ui;
 };
 
-#endif // HELPWINDOW_H
+#endif // HELPWINDOW_HPP
