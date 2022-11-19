@@ -33,7 +33,7 @@ IDC           = idc
 IDL           = midl
 ZIP           = zip -r -9
 DEF_FILE      = 
-RES_FILE      = 
+RES_FILE      = scope_resource_res.o
 SED           = $(QMAKE) -install sed
 MOVE          = move
 SUBTARGETS    =  \
@@ -275,9 +275,11 @@ Makefile: ../scope/scope.pro E:/Qt5.14.2/qt/5.14.2/mingw73_32/mkspecs/win32-g++/
 		E:/Qt5.14.2/qt/5.14.2/mingw73_32/lib/Qt5PrintSupport.prl \
 		E:/Qt5.14.2/qt/5.14.2/mingw73_32/lib/Qt5Widgets.prl \
 		E:/Qt5.14.2/qt/5.14.2/mingw73_32/lib/Qt5Gui.prl \
+		E:/Qt5.14.2/qt/5.14.2/mingw73_32/lib/Qt5SerialPort.prl \
 		E:/Qt5.14.2/qt/5.14.2/mingw73_32/lib/Qt5Core.prl \
 		E:/Qt5.14.2/qt/5.14.2/mingw73_32/lib/qtmain.prl \
-		E:/Qt5.14.2/qt/5.14.2/mingw73_32/mkspecs/features/build_pass.prf
+		E:/Qt5.14.2/qt/5.14.2/mingw73_32/mkspecs/features/build_pass.prf \
+		../scope/scope.qrc
 	$(QMAKE) -o Makefile ..\scope\scope.pro -spec win32-g++ "CONFIG+=debug" "CONFIG+=qml_debug"
 E:/Qt5.14.2/qt/5.14.2/mingw73_32/mkspecs/features/spec_pre.prf:
 E:/Qt5.14.2/qt/5.14.2/mingw73_32/mkspecs/qdevice.pri:
@@ -484,9 +486,11 @@ E:/Qt5.14.2/qt/5.14.2/mingw73_32/mkspecs/features/lex.prf:
 E:/Qt5.14.2/qt/5.14.2/mingw73_32/lib/Qt5PrintSupport.prl:
 E:/Qt5.14.2/qt/5.14.2/mingw73_32/lib/Qt5Widgets.prl:
 E:/Qt5.14.2/qt/5.14.2/mingw73_32/lib/Qt5Gui.prl:
+E:/Qt5.14.2/qt/5.14.2/mingw73_32/lib/Qt5SerialPort.prl:
 E:/Qt5.14.2/qt/5.14.2/mingw73_32/lib/Qt5Core.prl:
 E:/Qt5.14.2/qt/5.14.2/mingw73_32/lib/qtmain.prl:
 E:/Qt5.14.2/qt/5.14.2/mingw73_32/mkspecs/features/build_pass.prf:
+../scope/scope.qrc:
 qmake: FORCE
 	@$(QMAKE) -o Makefile ..\scope\scope.pro -spec win32-g++ "CONFIG+=debug" "CONFIG+=qml_debug"
 
